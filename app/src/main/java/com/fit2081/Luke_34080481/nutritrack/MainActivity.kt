@@ -1,5 +1,6 @@
 package com.fit2081.Luke_34080481.nutritrack
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.*
@@ -88,23 +90,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
-                        ElevatedButton(
-                            onClick = {},
-                            modifier = Modifier.padding(20.dp).fillMaxWidth(),
-                            colors = ButtonColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                disabledContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            ),
-                            enabled = true,
-                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
-                        ) {
-                            Text(
-                                text = "Login",
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
+                        LoginButton()
 
                         Text(
                             text = "Made with ❤\uFE0F by Luke Won (34080481)",
@@ -114,6 +100,30 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+
+    @Composable
+    fun LoginButton() {
+        val context = LocalContext.current
+        ElevatedButton(
+            onClick = {
+                context.startActivity(Intent(context, LoginScreen::class.java))
+            },
+            modifier = Modifier.padding(20.dp).fillMaxWidth(),
+            colors = ButtonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                disabledContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ),
+            enabled = true,
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
+        ) {
+            Text(
+                text = "Login",
+                fontWeight = FontWeight.SemiBold
+            )
         }
     }
 }
@@ -152,3 +162,4 @@ fun DisclaimerText() {
         Text(annotatedLinkString)
     }
 }
+
