@@ -127,7 +127,17 @@ class LoginScreen : ComponentActivity() {
 
         ElevatedButton(
             onClick = {
-                Toast.makeText(context, "ID: " + textFieldState.text + " Phone Number: " + phoneNum, Toast.LENGTH_LONG).show()
+                var validUser = verifyUserExistence(textFieldState.text, phoneNum, userData)
+                if (validUser) {
+                    val sharedPref = context.getSharedPreferences("NutriTrack", Context.MODE_PRIVATE).edit()
+                    sharedPref.putString("userId", textFieldState.text.toString())
+                    sharedPref.putString("phoneNum", phoneNum)
+                    sharedPref.apply()
+                    context.startActivity(Intent(context, Questionnaire::class.java))
+                } else {
+                    Toast.makeText(context, "User does not exist", Toast.LENGTH_LONG).show()
+                }
+
             },
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp).fillMaxWidth(),
             colors = ButtonColors(
@@ -144,13 +154,6 @@ class LoginScreen : ComponentActivity() {
                 fontWeight = FontWeight.SemiBold
             )
         }
-
-        Text(
-            text = userData[1][0] + userData[1][1],
-            color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.bodySmall
-        )
-
     }
 
     fun readCSVFromAssets(context: Context, fileName: String): List<List<String>> {
@@ -171,7 +174,15 @@ class LoginScreen : ComponentActivity() {
         return csvList
     }
 
-    fun verifyUserExistence(userID: integer) {
+    fun verifyUserExistence(userID: CharSequence, phoneNumber: String, userData: List<List<Any>>): Boolean {
+        var validUser = false
 
+        for (row in userData.drop(1)) {
+            if (row[0] == phoneNumber && row[1] == userID) {
+                validUser = true
+            }
+        }
+
+        return validUser
     }
 }
