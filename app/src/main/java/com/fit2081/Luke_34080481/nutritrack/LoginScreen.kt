@@ -36,6 +36,7 @@ import android.content.Context
 import android.widget.TextView
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import androidx.core.content.edit
 
 class LoginScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -129,10 +130,10 @@ class LoginScreen : ComponentActivity() {
             onClick = {
                 var validUser = verifyUserExistence(textFieldState.text, phoneNum, userData)
                 if (validUser) {
-                    val sharedPref = context.getSharedPreferences("NutriTrack", Context.MODE_PRIVATE).edit()
-                    sharedPref.putString("userId", textFieldState.text.toString())
-                    sharedPref.putString("phoneNum", phoneNum)
-                    sharedPref.apply()
+                    context.getSharedPreferences("NutriTrack", Context.MODE_PRIVATE).edit() {
+                        putString("userId", textFieldState.text.toString())
+                        putString("phoneNum", phoneNum)
+                    }
                     context.startActivity(Intent(context, Questionnaire::class.java))
                 } else {
                     Toast.makeText(context, "User does not exist", Toast.LENGTH_LONG).show()
