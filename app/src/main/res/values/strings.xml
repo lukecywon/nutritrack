@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Nutritrack</string>
     <string name="title_activity_login_screen">LoginScreen</string>
+    <string name="title_activity_questionnaire">Questionnaire</string>
 </resources>
