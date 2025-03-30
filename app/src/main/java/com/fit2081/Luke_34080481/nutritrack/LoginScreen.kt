@@ -37,6 +37,7 @@ import android.widget.TextView
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import androidx.core.content.edit
+import java.io.Serializable
 
 class LoginScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,6 +73,8 @@ class LoginScreen : ComponentActivity() {
             }
         }
     }
+
+    data class User(val ID: String, val phoneNumber: String) : Serializable
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -128,13 +131,12 @@ class LoginScreen : ComponentActivity() {
 
         ElevatedButton(
             onClick = {
+                var questionnaire = Intent(context, Questionnaire::class.java)
                 var validUser = verifyUserExistence(textFieldState.text, phoneNum, userData)
                 if (validUser) {
-                    context.getSharedPreferences("NutriTrack", Context.MODE_PRIVATE).edit() {
-                        putString("userId", textFieldState.text.toString())
-                        putString("phoneNum", phoneNum)
-                    }
-                    context.startActivity(Intent(context, Questionnaire::class.java))
+                    val user = User(textFieldState.toString(), phoneNum)
+                    questionnaire.putExtra("CURRENT_USER", user)
+                    context.startActivity(intent)
                 } else {
                     Toast.makeText(context, "User does not exist", Toast.LENGTH_LONG).show()
                 }
