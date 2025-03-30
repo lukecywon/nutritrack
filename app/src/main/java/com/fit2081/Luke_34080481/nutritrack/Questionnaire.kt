@@ -125,6 +125,8 @@ class Questionnaire : ComponentActivity() {
                 Button(onClick = {
                     val sharedPref = context.getSharedPreferences("NutriTrack", Context.MODE_PRIVATE).edit()
                     val likedFood = foodTypes.filter { it.isChecked.value }.joinToString { it.label }
+                    val appHome = Intent(context, AppHome::class.java)
+                    val user = intent.getSerializableExtra("CURRENT_USER") as? LoginScreen.User
 
                     Toast.makeText(context, likedFood + " Persona: " + selectedPersona.name + " Timings: " + biggestMealTime + " " + sleepTime + " " + wakeUpTime, Toast.LENGTH_SHORT).show()
 
@@ -135,7 +137,10 @@ class Questionnaire : ComponentActivity() {
                     sharedPref.putString("wakeUpTime", wakeUpTime)
                     sharedPref.apply()
 
-                    context.startActivity(Intent(context, AppHome::class.java))
+                    // Add input validation
+
+                    appHome.putExtra("CURRENT_USER", user)
+                    context.startActivity(appHome)
                 }) {
                     Icon(imageVector = Icons.Filled.Save, contentDescription = "Save")
                     Spacer(modifier = Modifier.padding(horizontal = 2.dp))
