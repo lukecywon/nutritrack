@@ -76,7 +76,11 @@ class Questionnaire : ComponentActivity() {
     @Composable
     fun Questions() {
         val context = LocalContext.current
-        val foodTypes = remember { mutableListOf(
+        val appHome = Intent(context, AppHome::class.java)
+        val user_id = intent.getStringExtra("USER_ID")
+        val user_phone = intent.getStringExtra("USER_PHONE")
+        val sharedPref = context.getSharedPreferences(user_id, Context.MODE_PRIVATE)
+        var foodTypes = remember { mutableListOf(
             FoodOption("Fruits"),
             FoodOption("Vegetables"),
             FoodOption("Grains"),
@@ -88,6 +92,14 @@ class Questionnaire : ComponentActivity() {
             FoodOption("Nuts/Seeds")
         ) }
 
+        // Loading up previous questionnaire data for food categories
+        val previousFood = sharedPref.getString("likedFood", null)
+        foodTypes.forEach { option ->
+            if (previousFood?.contains(option.label) == true) {
+                option.isChecked.value = true
+            }
+        }
+
         val personas = remember { mutableListOf<Persona>(
             Persona("Health Devotee", "I’m passionate about healthy eating & health plays a big part in my life. I use social media to follow active lifestyle personalities or get new recipes/exercise ideas. I may even buy superfoods or follow a particular type of diet. I like to think I am super healthy.", R.drawable.persona_1),
             Persona("Mindful Eater", "I’m health-conscious and being healthy and eating healthy is important to me. Although health means different things to different people, I make conscious lifestyle decisions about eating based on what I believe healthy means. I look for new recipes and healthy eating information on social media.", R.drawable.persona_2),
@@ -97,24 +109,41 @@ class Questionnaire : ComponentActivity() {
             Persona("Food Carefree", "I’m not bothered about healthy eating. I don’t really see the point and I don’t think about it. I don’t really notice healthy eating tips or recipes and I don’t care what I eat.", R.drawable.persona_6)
         ) }
 
-        var selectedPersona by remember { mutableStateOf<Persona>(personas[0]) }
-        var biggestMealTime by remember { mutableStateOf("") }
-        var sleepTime by remember { mutableStateOf("") }
-        var wakeUpTime by remember { mutableStateOf("") }
+        // Loading up previous questionnaire data for persona
+        val previousPersonaString = sharedPref.getString("chosenPersona", personas[0].name)
+        val previousPersona = remember { mutableStateOf(personas[0]) }
+
+        personas.forEach { persona ->
+            if (persona.name == previousPersonaString) {
+                previousPersona.value = persona
+            }
+        }
+
+
+        var selectedPersona by remember { mutableStateOf<Persona>(previousPersona.value) }
+
+        // Loading up previous questionnaire data for timings
+        val previousBiggestMealTime = sharedPref.getString("biggestMealTime", "")
+        val previousSleepTime = sharedPref.getString("sleepTime", "")
+        val previousWakeUpTime = sharedPref.getString("wakeUpTime", "")
+
+        var biggestMealTime by remember { mutableStateOf(previousBiggestMealTime) }
+        var sleepTime by remember { mutableStateOf(previousSleepTime) }
+        var wakeUpTime by remember { mutableStateOf(previousWakeUpTime) }
 
         Column(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 10.dp)) {
             FoodCategories(foodTypes)
             HorizontalDivider(thickness = 1.dp)
-            PersonaPicker(personas) { persona ->
+            PersonaPicker(personas, previousPersona.value) { persona ->
                 selectedPersona = persona
             }
             HorizontalDivider(thickness = 1.dp)
             Timings(
-                biggestMealTime = biggestMealTime,
+                biggestMealTime = biggestMealTime.toString(),
                 onBiggestMealTimeSelected = { biggestMealTime = it },
-                sleepTime = sleepTime,
+                sleepTime = sleepTime.toString(),
                 onSleepTimeSelected = { sleepTime = it },
-                wakeUpTime = wakeUpTime,
+                wakeUpTime = wakeUpTime.toString(),
                 onWakeUpTimeSelected = { wakeUpTime = it }
             )
             HorizontalDivider(thickness = 1.dp)
@@ -123,11 +152,8 @@ class Questionnaire : ComponentActivity() {
                 horizontalArrangement = Arrangement.Center
             ) {
                 Button(onClick = {
-                    val sharedPref = context.getSharedPreferences("NutriTrack", Context.MODE_PRIVATE).edit()
                     val likedFood = foodTypes.filter { it.isChecked.value }.joinToString { it.label }
-                    val appHome = Intent(context, AppHome::class.java)
-                    val user = intent.getSerializableExtra("CURRENT_USER") as? LoginScreen.User
-
+                    val sharedPref = context.getSharedPreferences(user_id, Context.MODE_PRIVATE).edit()
                     Toast.makeText(context, likedFood + " Persona: " + selectedPersona.name + " Timings: " + biggestMealTime + " " + sleepTime + " " + wakeUpTime, Toast.LENGTH_SHORT).show()
 
                     sharedPref.putString("likedFood", likedFood)
@@ -139,7 +165,8 @@ class Questionnaire : ComponentActivity() {
 
                     // Add input validation
 
-                    appHome.putExtra("CURRENT_USER", user)
+                    appHome.putExtra("USER_ID", user_id)
+                    appHome.putExtra("USER_PHONE", user_phone)
                     context.startActivity(appHome)
                 }) {
                     Icon(imageVector = Icons.Filled.Save, contentDescription = "Save")
@@ -211,7 +238,7 @@ class Questionnaire : ComponentActivity() {
     @Composable
     fun timePickerButton(selectedTime: String, onTimeSelected: (String) -> Unit) {
         var showDialog by remember { mutableStateOf(false) }
-        var selectedTime by remember { mutableStateOf("00:00") }
+        var selectedTime by remember { mutableStateOf(selectedTime) }
 
         OutlinedButton(onClick = { showDialog = true }, modifier = Modifier.size(width = 120.dp, height = 35.dp).fillMaxHeight()) {
             Icon(
@@ -312,7 +339,7 @@ class Questionnaire : ComponentActivity() {
 
     @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
     @Composable
-    fun PersonaPicker(personas: MutableList<Persona>, onPersonaSelected: (Persona) -> Unit) {
+    fun PersonaPicker(personas: MutableList<Persona>, oldPersona: Persona, onPersonaSelected: (Persona) -> Unit) {
         Text(
             text = "Your Persona",
             style = MaterialTheme.typography.titleMedium,
@@ -345,7 +372,7 @@ class Questionnaire : ComponentActivity() {
         Spacer(modifier = Modifier.padding(5.dp))
 
         var expanded by remember { mutableStateOf(false) }
-        val textFieldState = rememberTextFieldState(personas[0].name)
+        val textFieldState = rememberTextFieldState(oldPersona.name)
 
         ExposedDropdownMenuBox(
             expanded = expanded,

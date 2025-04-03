@@ -74,8 +74,6 @@ class LoginScreen : ComponentActivity() {
         }
     }
 
-    data class User(val ID: String, val phoneNumber: String) : Serializable
-
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun Login() {
@@ -134,9 +132,9 @@ class LoginScreen : ComponentActivity() {
                 var questionnaire = Intent(context, Questionnaire::class.java)
                 var validUser = verifyUserExistence(textFieldState.text, phoneNum, userData)
                 if (validUser) {
-                    val user = User(textFieldState.toString(), phoneNum)
-                    questionnaire.putExtra("CURRENT_USER", user)
-                    context.startActivity(intent)
+                    questionnaire.putExtra("USER_ID", textFieldState.text.toString())
+                    questionnaire.putExtra("USER_PHONE", phoneNum)
+                    context.startActivity(questionnaire)
                 } else {
                     Toast.makeText(context, "User does not exist", Toast.LENGTH_LONG).show()
                 }
