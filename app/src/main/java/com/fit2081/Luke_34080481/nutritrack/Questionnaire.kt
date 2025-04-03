@@ -154,20 +154,22 @@ class Questionnaire : ComponentActivity() {
                 Button(onClick = {
                     val likedFood = foodTypes.filter { it.isChecked.value }.joinToString { it.label }
                     val sharedPref = context.getSharedPreferences(user_id, Context.MODE_PRIVATE).edit()
-                    Toast.makeText(context, likedFood + " Persona: " + selectedPersona.name + " Timings: " + biggestMealTime + " " + sleepTime + " " + wakeUpTime, Toast.LENGTH_SHORT).show()
+                    if (biggestMealTime == "" || sleepTime == "" || wakeUpTime == "") {
+                        Toast.makeText(context, "Error: timing field is empty", Toast.LENGTH_SHORT).show()
+                    } else {
+                        sharedPref.putString("likedFood", likedFood)
+                        sharedPref.putString("chosenPersona", selectedPersona.name)
+                        sharedPref.putString("biggestMealTime", biggestMealTime)
+                        sharedPref.putString("sleepTime", sleepTime)
+                        sharedPref.putString("wakeUpTime", wakeUpTime)
+                        sharedPref.apply()
 
-                    sharedPref.putString("likedFood", likedFood)
-                    sharedPref.putString("chosenPersona", selectedPersona.name)
-                    sharedPref.putString("biggestMealTime", biggestMealTime)
-                    sharedPref.putString("sleepTime", sleepTime)
-                    sharedPref.putString("wakeUpTime", wakeUpTime)
-                    sharedPref.apply()
+                        // Add input validation
 
-                    // Add input validation
-
-                    appHome.putExtra("USER_ID", user_id)
-                    appHome.putExtra("USER_PHONE", user_phone)
-                    context.startActivity(appHome)
+                        appHome.putExtra("USER_ID", user_id)
+                        appHome.putExtra("USER_PHONE", user_phone)
+                        context.startActivity(appHome)
+                    }
                 }) {
                     Icon(imageVector = Icons.Filled.Save, contentDescription = "Save")
                     Spacer(modifier = Modifier.padding(horizontal = 2.dp))
